@@ -1,0 +1,12 @@
+@font-face {
+  font-family: 'PingFangSC'; /* 自定义字体名称，后面用这个名字 */
+  src:url('../fonts/苹方黑体-准-简.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'PingFangHei'; /* 自定义字体名称，后面用这个名字 */
+  src:url('../fonts/苹方黑体-中粗-简.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
