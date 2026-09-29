@@ -40,7 +40,6 @@
           定位服务次数：<span class="count-num">2793</span><span class="count-unit">次</span>
         </div>
         <div class="map-wrap">
-          <!-- <Map3D /> -->
         </div>
       </div>
 
@@ -134,7 +133,6 @@
 import * as echarts from 'echarts'
 import Panel from './components/Panel.vue'
 import Header from './components/Header.vue'
-import Map3D from './components/Map3D.vue'
 
 export default {
   name: 'ScreenPage',
