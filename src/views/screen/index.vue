@@ -40,27 +40,6 @@
           定位服务次数：<span class="count-num">2793</span><span class="count-unit">次</span>
         </div>
         <!-- <div class="map-wrap">
-          <svg class="map-svg" viewBox="0 0 600 460" preserveAspectRatio="xMidYMid meet">
-            <defs>
-              <linearGradient id="mapFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#0a4d8f" stop-opacity="0.85" />
-                <stop offset="100%" stop-color="#062a5c" stop-opacity="0.9" />
-              </linearGradient>
-            </defs>
-            <polygon class="map-shape"
-              points="300,30 360,50 420,40 470,80 520,90 540,140 500,180 510,230 470,270 480,330 430,370 380,360 340,410 280,430 220,400 170,410 130,370 90,340 100,280 70,230 110,190 150,200 180,150 230,130 250,80"
-              fill="url(#mapFill)" stroke="#3fc9ff" stroke-width="2" />
-          </svg>
-          <div class="heat heat-red" style="left: 32%; top: 40%"></div>
-          <div class="heat heat-yellow" style="left: 55%; top: 55%"></div>
-          <div class="heat heat-green" style="left: 68%; top: 62%"></div>
-          <div v-for="(r, i) in regions" :key="i" class="region-tag" :style="{ left: r.x + '%', top: r.y + '%' }">
-            <div class="region-box">
-              <div class="region-num">{{ r.num }}</div>
-              <div class="region-name">{{ r.name }}</div>
-            </div>
-            <div class="region-arrow"></div>
-          </div>
         </div> -->
       </div>
 
@@ -107,17 +86,17 @@
 
     <!-- 底部四张表 -->
     <div class="screen-bottom">
-      <Panel title="资源监控（含数据库+中间件）" class="resource-table">
-        <el-table :data="resourceRows" size="mini">
-          <el-table-column prop="module" label="模块" min-width="80px" show-overflow-tooltip />
-          <el-table-column prop="cpu" label="CPU" min-width="60px" show-overflow-tooltip />
-          <el-table-column prop="memory" label="内存" min-width="80px" show-overflow-tooltip />
-          <el-table-column prop="io" label="IO" min-width="80px" show-overflow-tooltip />
+      <Panel title="资源监控（含数据库+中间件）" class="bottom-table">
+        <el-table :data="resourceRows" size="mini" highlight-current-row>
+          <el-table-column prop="module" label="模块" min-width="70px" show-overflow-tooltip />
+          <el-table-column prop="cpu" label="CPU" min-width="70px" show-overflow-tooltip />
+          <el-table-column prop="memory" label="内存" min-width="70px" show-overflow-tooltip />
+          <el-table-column prop="io" label="IO" min-width="70px" show-overflow-tooltip />
           <el-table-column prop="time" label="时间" min-width="100px" show-overflow-tooltip />
         </el-table>
       </Panel>
-      <Panel title="应用告警">
-        <el-table :data="alarmRows" size="mini">
+      <Panel title="应用告警" class="bottom-table">
+        <el-table :data="alarmRows" size="mini" highlight-current-row>
           <el-table-column prop="module" label="模块" show-overflow-tooltip min-width="60px" />
           <el-table-column prop="type" label="类型" show-overflow-tooltip min-width="50px" />
           <el-table-column prop="count" label="次数" show-overflow-tooltip min-width="60px" />
@@ -127,16 +106,16 @@
           <el-table-column prop="ioOver" label="IO超限" show-overflow-tooltip min-width="80px" />
         </el-table>
       </Panel>
-      <Panel title="异常日志">
-        <el-table :data="logRows" size="mini">
+      <Panel title="异常日志" class="bottom-table">
+        <el-table :data="logRows" size="mini" highlight-current-row>
           <el-table-column prop="module" label="模块" />
           <el-table-column prop="log" label="日志" show-overflow-tooltip />
           <el-table-column prop="count" label="次数" />
           <el-table-column prop="time" label="时间" min-width="80px" show-overflow-tooltip />
         </el-table>
       </Panel>
-      <Panel title="连通性监控">
-        <el-table :data="connRows" size="mini" class="conn-table">
+      <Panel title="连通性监控" class="bottom-table">
+        <el-table :data="connRows" size="mini" highlight-current-row>
           <el-table-column prop="type" label="类型" />
           <el-table-column label="状态">
             <template slot-scope="{ row }">
@@ -174,19 +153,6 @@ export default {
         { port: 8103, system: 'ITRF08' }
       ],
       accountStats: ['活跃帐号数', '并发数', '当前用户数'],
-      regions: [
-        { num: 3920, name: '临平区', x: 62, y: 12 },
-        { num: 3920, name: '余杭区', x: 52, y: 22 },
-        { num: 19023, name: '富阳区', x: 66, y: 28 },
-        { num: 10839, name: '钱塘区', x: 80, y: 22 },
-        { num: 76282, name: '临安区', x: 30, y: 32 },
-        { num: 3920, name: '西湖区', x: 55, y: 38 },
-        { num: 1782, name: '萧山区', x: 70, y: 45 },
-        { num: 3002, name: '富阳区', x: 52, y: 52 },
-        { num: 29372, name: '桐庐县', x: 40, y: 62 },
-        { num: 12234567, name: '淳安县', x: 22, y: 72 },
-        { num: 10730, name: '建德市', x: 48, y: 78 }
-      ],
       resourceRows: [1, 2, 3].map(() => ({
         module: '模块一',
         cpu: 'CPU名字',
@@ -315,8 +281,8 @@ export default {
 .screen {
   width: 100vw;
   height: 100vh;
-  min-width: 1280px;
-  min-height: 700px;
+  min-width: 1280Px;
+  min-height: 700Px;
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, #041b3a 0%, #02102a 100%);
@@ -324,7 +290,7 @@ export default {
   font-family: PingFangSC, "PingFang SC", "Microsoft YaHei", sans-serif;
   overflow: auto;
   box-sizing: border-box;
-  padding: 0 16px 16px;
+  padding: 0 0 16px;
 
   /* 深色科技风滚动条 */
   &::-webkit-scrollbar {
@@ -432,6 +398,7 @@ export default {
   min-height: 0;
   display: flex;
   gap: 14px;
+  padding: 0 16px;
 }
 
 .col {
@@ -573,7 +540,7 @@ export default {
 
 .count-num {
   font-size: 44px;
-  font-family: JiangChengXieHei, JiangChengXieHei;
+  font-family: PingFangHei;
   font-weight: normal;
   font-size: 48px;
   color: #00FDFF;
@@ -763,13 +730,16 @@ export default {
   height: 26%;
   flex-shrink: 0;
   display: flex;
+  box-sizing: border-box;
+  padding: 0 16px;
   // gap: 14px;
   margin-top: 14px;
 
-  // .resource-table,
-  // .conn-table {
-  //   width: 450px;
-  // }
+  .bottom-table {
+    /deep/.panel-body {
+      padding: 22px;
+    }
+  }
 }
 
 .screen-bottom .panel {
@@ -783,11 +753,17 @@ export default {
   color: #cfe8ff;
   font-size: 14px;
 
+  thead {
+    background: url('~@/assets/images/矩形备份 7.png');
+    background-size: 100% 100%;
+  }
+
   th.el-table__cell {
     background: transparent;
     color: #D8F0FF;
     font-weight: 600;
-    border-bottom: 1px solid rgba(0, 180, 255, 0.35);
+    border-bottom: none;
+    text-align: center;
   }
 
 
@@ -795,10 +771,20 @@ export default {
     color: #fff;
     font-size: 12px;
     background: transparent;
-    border-bottom: 1px solid rgba(0, 180, 255, 0.12);
+    border-bottom: none;
+    text-align: center;
   }
 
   tr {
+    background: transparent;
+  }
+
+  .el-table__body tr.current-row {
+    background: url('~@/assets/images/框(1).png');
+    background-size: 100% 100%;
+  }
+
+  .el-table__body tr.current-row>td.el-table__cell {
     background: transparent;
   }
 
