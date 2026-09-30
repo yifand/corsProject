@@ -8,7 +8,7 @@ import 'echarts-gl'
 import hangzhouGeo from '@/assets/geo/hangzhou.json'
 import baseImg from '@/assets/images/底座.png'
 import labelBgImg from '@/assets/images/框(4).png'
-import mapBgImg from '@/assets/images/map_bg.png'
+import mapBgImg from '@/assets/images/home_bg.png'
 
 /* 各区县 mock 数值（取自设计稿） */
 const DISTRICT_VALUES = {
@@ -111,7 +111,7 @@ export default {
             },
             itemStyle: {
               color: '#9cc3f0',
-              borderColor: '#4fd8ff',
+              borderColor: '#1E7BD6',
               borderWidth: 1.5
             },
             label: { show: false },
