@@ -40,6 +40,7 @@
           定位服务次数：<span class="count-num">2793</span><span class="count-unit">次</span>
         </div>
         <div class="map-wrap">
+          <Map3D />
         </div>
       </div>
 
@@ -133,6 +134,7 @@
 import * as echarts from 'echarts'
 import Panel from './components/Panel.vue'
 import Header from './components/Header.vue'
+import Map3D from './components/Map3D.vue'
 
 export default {
   name: 'ScreenPage',
@@ -285,7 +287,9 @@ export default {
   min-height: 700Px;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #041b3a 0%, #02102a 100%);
+  background: url('~@/assets/images/home_bg.png') no-repeat center center;
+  background-size: 100% 100%;
+  background-color: #02102a; /* 图片加载前的兜底色 */
   color: #cfe8ff;
   font-family: PingFangSC, "PingFang SC", "Microsoft YaHei", sans-serif;
   overflow: auto;

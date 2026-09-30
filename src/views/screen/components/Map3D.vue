@@ -169,7 +169,7 @@ export default {
                 position: 'top',
                 distance: 18,
                 formatter: p => `${p.value[3]}\n${p.name}`,
-                color: '#aef0ff',
+                color: '#fff',
                 fontSize: 12,
                 lineHeight: 14,
                 padding: [5, 10],
