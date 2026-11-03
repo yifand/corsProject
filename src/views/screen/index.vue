@@ -289,7 +289,8 @@ export default {
   flex-direction: column;
   background: url('~@/assets/images/home_bg.png') no-repeat center center;
   background-size: 100% 100%;
-  background-color: #02102a; /* 图片加载前的兜底色 */
+  background-color: #02102a;
+  /* 图片加载前的兜底色 */
   color: #cfe8ff;
   font-family: PingFangSC, "PingFang SC", "Microsoft YaHei", sans-serif;
   overflow: auto;
@@ -421,6 +422,7 @@ export default {
 .col-center {
   flex: 1;
   min-width: 0;
+  position: relative;
   display: flex;
   flex-direction: column;
 }
@@ -535,11 +537,19 @@ export default {
 /* 中列 */
 .locate-count {
   text-align: center;
-  padding: 10px 0 4px;
-  font-size: 20px;
-  color: #d8ecff;
+  padding: 10px 35px;
+  font-size: 26px;
+  color: #fff;
+  font-weight: 500;
   letter-spacing: 2px;
   font-style: oblique;
+  background: url('~@/assets/images/bg_title.png') no-repeat center center;
+  background-size: 100% 100%;
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
 }
 
 .count-num {
@@ -555,7 +565,7 @@ export default {
 }
 
 .count-unit {
-  font-size: 16px;
+  font-size: 26px;
   color: #fff;
 }
 

@@ -17,19 +17,79 @@ const routes = [
   {
     path: '/',
     component: () => import('@/layout/index.vue'),
-    redirect: '/dashboard',
+    redirect: '/station/list',
     children: [
       {
-        path: 'dashboard',
-        name: 'Dashboard',
-        component: () => import('@/views/dashboard/index.vue'),
-        meta: { title: '仪表盘' }
+        path: 'station/map',
+        name: 'StationMap',
+        components: {
+          default: () => import('@/views/station/map.vue'),
+          filters: () => import('@/views/station/components/MapFilter.vue')
+        },
+        meta: { title: '站点管理>站点分布', menu: '站点分布' }
       },
       {
-        path: 'user',
-        name: 'User',
-        component: () => import('@/views/user/index.vue'),
-        meta: { title: '用户管理' }
+        path: 'station/list',
+        name: 'StationList',
+        components: {
+          default: () => import('@/views/station/list.vue'),
+          filters: () => import('@/views/station/components/ListFilter.vue')
+        },
+        meta: { title: '站点管理>基准站列表', menu: '基准站列表' }
+      },
+      {
+        path: 'station/quality',
+        name: 'StationQuality',
+        component: () => import('@/views/station/quality.vue'),
+        meta: { title: '站点管理>基准站质检统计', menu: '基准站质检统计' }
+      },
+      {
+        path: 'satellite/track',
+        name: 'SatelliteTrack',
+        component: () => import('@/views/satellite/track.vue'),
+        meta: { title: '卫星管理>卫星实时轨迹', menu: '卫星实时轨迹' }
+      },
+      {
+        path: 'order',
+        name: 'Order',
+        component: () => import('@/views/common/Placeholder.vue'),
+        meta: { title: '订单管理', menu: '订单管理' }
+      },
+      {
+        path: 'account',
+        name: 'Account',
+        component: () => import('@/views/common/Placeholder.vue'),
+        meta: { title: '账号管理', menu: '账号管理' }
+      },
+      {
+        path: 'system',
+        name: 'System',
+        component: () => import('@/views/common/Placeholder.vue'),
+        meta: { title: '系统管理', menu: '系统管理' }
+      },
+      {
+        path: 'subnet',
+        name: 'Subnet',
+        component: () => import('@/views/common/Placeholder.vue'),
+        meta: { title: '子网管理', menu: '子网管理' }
+      },
+      {
+        path: 'region',
+        name: 'Region',
+        component: () => import('@/views/common/Placeholder.vue'),
+        meta: { title: '分区管理', menu: '分区管理' }
+      },
+      {
+        path: 'source-node',
+        name: 'SourceNode',
+        component: () => import('@/views/common/Placeholder.vue'),
+        meta: { title: '源节点管理', menu: '源节点管理' }
+      },
+      {
+        path: 'alarm',
+        name: 'Alarm',
+        component: () => import('@/views/common/Placeholder.vue'),
+        meta: { title: '告警管理', menu: '告警管理' }
       }
     ]
   },
