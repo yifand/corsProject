@@ -50,6 +50,12 @@ const routes = [
         meta: { title: '卫星管理>卫星实时轨迹', menu: '卫星实时轨迹' }
       },
       {
+        path: 'satellite/if',
+        name: 'SatelliteIf',
+        component: () => import('@/views/satellite/if.vue'),
+        meta: { title: '卫星管理>IF时序图', menu: 'IF时序图' }
+      },
+      {
         path: 'order',
         name: 'Order',
         component: () => import('@/views/common/Placeholder.vue'),

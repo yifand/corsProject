@@ -26,10 +26,14 @@
       <!-- 右上角控制面板 -->
       <div class="map-panel">
         <div class="panel-master">
-          <el-checkbox v-model="showSats" @change="onMasterChange">卫星</el-checkbox>
-          <el-checkbox v-model="showTracks" @change="onMasterChange">轨迹线</el-checkbox>
+          <div class="master-checks">
+            <el-checkbox v-model="showSats" @change="onMasterChange">卫星</el-checkbox>
+            <el-checkbox v-model="showTracks" @change="onMasterChange">轨迹线</el-checkbox>
+          </div>
+          <i class="panel-toggle" :class="panelCollapsed ? 'el-icon-arrow-down' : 'el-icon-arrow-up'"
+            :title="panelCollapsed ? '展开' : '收起'" @click="panelCollapsed = !panelCollapsed"></i>
         </div>
-        <div class="panel-body">
+        <div v-show="!panelCollapsed" class="panel-body">
           <div v-for="sys in systems" :key="sys.key" class="sys-group">
             <div class="sys-title">
               <el-checkbox :value="isSysAll(sys.key)" :indeterminate="isSysIndeterminate(sys.key)"
@@ -39,14 +43,18 @@
                   {{ sys.label }}
                 </span>
               </el-checkbox>
+              <i class="sys-toggle" :class="sysCollapsed[sys.key] ? 'el-icon-arrow-right' : 'el-icon-arrow-down'"
+                :title="sysCollapsed[sys.key] ? '展开' : '收起'" @click.stop="toggleSysCollapse(sys.key)"></i>
             </div>
-            <div v-for="sat in groupOf(sys.key)" :key="sat.id" class="sat-item">
-              <el-checkbox v-model="checked[sat.id]" @change="toggleSat(sat)">
-                <span class="sat-label">
-                  <span class="legend-badge" :style="{ background: sat.color }"></span>
-                  {{ sat.name }}
-                </span>
-              </el-checkbox>
+            <div v-show="!sysCollapsed[sys.key]" class="sys-sats">
+              <div v-for="sat in groupOf(sys.key)" :key="sat.id" class="sat-item">
+                <el-checkbox v-model="checked[sat.id]" @change="toggleSat(sat)">
+                  <span class="sat-label">
+                    <span class="legend-badge" :style="{ background: sat.color }"></span>
+                    {{ sat.name }}
+                  </span>
+                </el-checkbox>
+              </div>
             </div>
           </div>
         </div>
@@ -124,7 +132,9 @@ export default {
       epochIndex: {}, // 历元 -> { prn -> 点位 }
       checked: {}, // prn -> bool
       showSats: true,
-      showTracks: true
+      showTracks: true,
+      panelCollapsed: false, // 控制面板列表折叠态（总开关始终可见）
+      sysCollapsed: {} // 系统分组折叠态：系统 key -> bool，undefined 即展开
     }
   },
   computed: {
@@ -359,6 +369,10 @@ export default {
     },
     groupOf(key) {
       return this.sats.filter(s => s.system === key)
+    },
+    // 折叠/展开某个系统的卫星列表（动态 key 需 $set 保证响应式）
+    toggleSysCollapse(key) {
+      this.$set(this.sysCollapsed, key, !this.sysCollapsed[key])
     }
   }
 }
@@ -479,11 +493,30 @@ export default {
 .panel-master {
   flex: none;
   display: flex;
-  justify-content: space-around;
+  align-items: center;
+  justify-content: space-between;
   padding: 10px 14px;
   border-bottom: 1px solid rgba(64, 196, 255, 0.18);
   background: rgba(64, 196, 255, 0.06);
   border-radius: 8px 8px 0 0;
+}
+
+.master-checks {
+  flex: 1;
+  display: flex;
+  justify-content: space-around;
+}
+
+.panel-toggle {
+  margin-left: 8px;
+  color: #7fe3ff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.panel-toggle:hover {
+  color: #d9f6ff;
 }
 
 .panel-body {
@@ -516,10 +549,22 @@ export default {
 .sys-title {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   font-size: 13px;
   font-weight: 600;
   color: #d9f2ff;
   margin-bottom: 4px;
+}
+
+.sys-toggle {
+  cursor: pointer;
+  color: #7fe3ff;
+  font-size: 12px;
+  transition: color 0.2s ease;
+}
+
+.sys-toggle:hover {
+  color: #d9f6ff;
 }
 
 .sat-item {

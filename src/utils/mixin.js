@@ -95,7 +95,7 @@ export const mapInitialization = {
             {
               center: transform([108, 35], 'EPSG:4326', 'EPSG:3857'),
               zoom: 4,
-              minZoom: 4,
+              minZoom: 1,
               maxZoom: 18
             },
             viewOptions

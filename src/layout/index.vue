@@ -131,6 +131,7 @@ export default {
           ]
         },
         { title: '卫星实时轨迹', path: '/satellite/track' },
+        { title: 'IF时序图', path: '/satellite/if' },
         { title: '子网管理', path: '/subnet' },
         { title: '分区管理', path: '/region' },
         { title: '源节点管理', path: '/source-node' },
