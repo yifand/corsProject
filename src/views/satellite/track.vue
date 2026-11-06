@@ -4,23 +4,26 @@
     <div class="map-wrap">
       <div ref="mapEl" class="map-el"></div>
 
-      <!-- 左上角日期筛选 + 统计 + 播放控制 -->
+      <!-- 左上角日期筛选 + 统计 + 紧凑播放条 -->
       <div class="top-left">
         <el-date-picker v-model="selectedDate" class="date-picker" type="date" value-format="yyyyMMdd"
           :clearable="false" size="mini" @change="load" />
-        <div class="map-chip">在轨卫星[{{ visibleCount }}/{{ sats.length }}]</div>
-        <div class="map-chip">{{ epochs.length ? `历元 ${epochLabel}（${epochIdx + 1}/${epochs.length}）` : '无数据' }}</div>
-        <div class="map-chip play-chip" @click="togglePlay">
-          <i :class="playing ? 'el-icon-video-pause' : 'el-icon-video-play'"></i>
-          {{ playing ? '暂停' : '播放' }}
+        <div class="map-chip">在轨卫星[{{ visibleCount }}/{{ epochCount }}]</div>
+        <div class="map-chip tl-chip">
+          <i class="tl-play el-icon-d-arrow-left" title="回到起点" @click="backToStart"></i>
+          <i class="tl-play" :class="playing ? 'el-icon-video-pause' : 'el-icon-video-play'"
+            :title="playing ? '暂停' : '播放'" @click="togglePlay"></i>
+          <el-slider class="tl-slider" :value="epochIdx" :min="0" :max="Math.max(epochs.length - 1, 0)"
+            :format-tooltip="fmtEpochTip" @input="onSeek" />
+          <span class="tl-label">{{ epochs.length ? epochLabel : '无数据' }}</span>
         </div>
       </div>
 
-      <!-- 左下角 ifVal 渐变图例 -->
+      <!-- 左下角 IF 数值多选筛选（按钮颜色即图例，点击过滤当前历元卫星点） -->
       <div class="map-legend">
-        <span>0</span>
-        <div class="legend-bar"></div>
-        <span>7</span>
+        <span class="legend-title">IF</span>
+        <div v-for="v in 8" :key="v - 1" class="if-btn" :class="{ off: !ifValFilter.includes(v - 1) }"
+          :style="{ background: ifValColor(v - 1) }" @click="toggleIfVal(v - 1)">{{ v - 1 }}</div>
       </div>
 
       <!-- 右上角控制面板 -->
@@ -132,7 +135,8 @@ export default {
       epochIndex: {}, // 历元 -> { prn -> 点位 }
       checked: {}, // prn -> bool
       showSats: true,
-      showTracks: true,
+      showTracks: false, // 轨迹线默认关闭
+      ifValFilter: [0, 1, 2, 3, 4, 5, 6, 7], // IF 数值多选筛选，默认全选
       panelCollapsed: false, // 控制面板列表折叠态（总开关始终可见）
       sysCollapsed: {} // 系统分组折叠态：系统 key -> bool，undefined 即展开
     }
@@ -143,7 +147,12 @@ export default {
       return keys.map(k => ({ key: k, label: SYSTEM_MAP[k].label, color: SYSTEM_MAP[k].color }))
     },
     visibleCount() {
-      return this.sats.filter(s => this.checked[s.id]).length
+      return this.sats.filter(s => !this.isPointHidden(s)).length
+    },
+    // 当前历元有数据的卫星数（作为「在轨」分母，随历元波动）
+    epochCount() {
+      const cur = this.epochIndex[this.epochs[this.epochIdx]] || {}
+      return this.sats.filter(s => cur[s.id]).length
     },
     epochLabel() {
       const e = this.epochs[Math.min(this.epochIdx, this.epochs.length - 1)]
@@ -156,7 +165,7 @@ export default {
     this.initMap(
       this.$refs.mapEl,
       {
-        center: transform([30, 25], PROJ_4326, PROJ_3857),
+        center: transform([105, 35], PROJ_4326, PROJ_3857), // 默认中国居中
         zoom: 0,
         minZoom: 0,
         maxZoom: 18,
@@ -185,7 +194,7 @@ export default {
     createLayers() {
       // style function：逐星隐藏时返回 null
       const featureStyle = f => (f.get('hidden') ? null : f.get('styleObj'))
-      this.trackLayer = new VectorLayer({ source: new VectorSource(), style: featureStyle, zIndex: 10 })
+      this.trackLayer = new VectorLayer({ source: new VectorSource(), style: featureStyle, zIndex: 10, visible: this.showTracks })
       this.pointLayer = new VectorLayer({ source: new VectorSource(), style: featureStyle, zIndex: 11 })
     },
     // 锁定横向平移：中心经度固定，只允许上下拖动与缩放（左右拖动会看到 ±180° 重复世界，轨迹视觉错乱）
@@ -278,12 +287,30 @@ export default {
         if (p) {
           f.point.getGeometry().setCoordinates(transform([p.lon, p.lat], PROJ_4326, PROJ_3857))
           f.point.set('styleObj', this.pointStyle(sat.name, p.ifVal))
-          f.point.set('hidden', !this.checked[sat.id])
-        } else {
-          f.point.set('hidden', true) // 该历元缺星时隐藏点
         }
+        f.point.set('hidden', this.isPointHidden(sat)) // 未勾选 / 本历元缺星 / IF 过滤 均隐藏
         f.point.changed()
       })
+    },
+    // 卫星点当前是否应隐藏：未勾选、当前历元无数据、IF 值被过滤
+    isPointHidden(sat) {
+      if (!this.checked[sat.id]) return true
+      const cur = this.epochIndex[this.epochs[this.epochIdx]] || {}
+      const p = cur[sat.id]
+      if (!p) return true
+      const v = Math.max(0, Math.min(7, Number(p.ifVal) || 0))
+      return !this.ifValFilter.includes(v)
+    },
+    // IF 数值多选筛选：点选后刷新当前历元点位显隐
+    toggleIfVal(v) {
+      const i = this.ifValFilter.indexOf(v)
+      if (i >= 0) this.ifValFilter.splice(i, 1)
+      else this.ifValFilter.push(v)
+      this.applyEpoch(this.epochIdx)
+    },
+    // 供模板取 IF 渐变色（包装模块级函数）
+    ifValColor(v) {
+      return ifValColor(v)
     },
     // 某历元的 prn -> 点位 索引（load 时已预建）
     indexByPrn(epoch) {
@@ -316,6 +343,24 @@ export default {
       this.epochIdx++
       this.applyEpoch(this.epochIdx)
     },
+    // 拖动进度条：暂停并跳转。el-slider 在程序化改值时也会回显 input（firstValue watcher），
+    // 回显值等于当前 epochIdx，直接忽略；只有用户拖动产生的新值才视为 seek
+    onSeek(i) {
+      if (i === this.epochIdx) return
+      this.stopTimer()
+      this.epochIdx = i
+      this.applyEpoch(i)
+    },
+    // 进度条悬浮提示：显示对应历元时刻
+    fmtEpochTip(i) {
+      const e = this.epochs[i]
+      return e ? e.slice(11) : ''
+    },
+    // 回到起点：跳到第 0 历元；正在播放则从开头继续播，暂停则停在开头
+    backToStart() {
+      this.epochIdx = 0
+      this.applyEpoch(0)
+    },
     // 暂停/播放；播完后再次播放则从头重播
     togglePlay() {
       if (this.playing) {
@@ -338,15 +383,14 @@ export default {
     toggleSat(sat) {
       this.syncFeature(sat)
     },
-    // 把单星点与轨迹段显隐同步到 checked 状态
+    // 把单星点与轨迹段显隐同步到 checked 状态（点同时受 IF 筛选约束）
     syncFeature(sat) {
       const f = this.satFeatures[sat.id]
       if (!f) return
-      const hidden = !this.checked[sat.id]
-      f.point.set('hidden', hidden)
+      f.point.set('hidden', this.isPointHidden(sat))
       f.point.changed()
         ; (this.trackFeatures[sat.id] || []).forEach(seg => {
-          seg.set('hidden', hidden)
+          seg.set('hidden', !this.checked[sat.id])
           seg.changed()
         })
     },
@@ -399,7 +443,7 @@ export default {
   inset: 0;
 }
 
-/* 左上角日期筛选 + 统计 + 播放控制 */
+/* 左上角日期筛选 + 统计 + 紧凑播放条 */
 .top-left {
   position: absolute;
   top: 12px;
@@ -427,27 +471,57 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 10, 20, 0.35), inset 0 0 8px rgba(64, 196, 255, 0.08);
 }
 
-.play-chip {
-  cursor: pointer;
-  display: inline-flex;
+/* 左上角紧凑播放条（嵌在 map-chip 内） */
+.tl-chip {
+  display: flex;
   align-items: center;
-  gap: 4px;
-  user-select: none;
-  transition: all 0.2s ease;
+  gap: 8px;
+  padding: 4px 14px;
 }
 
-.play-chip:hover {
-  background: rgba(24, 62, 96, 0.92);
-  border-color: rgba(127, 227, 255, 0.8);
+.tl-play {
+  flex: none;
+  color: #7fe3ff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.tl-play:hover {
   color: #d9f6ff;
-  box-shadow: 0 4px 14px rgba(0, 10, 20, 0.45), 0 0 10px rgba(64, 196, 255, 0.35);
 }
 
-.play-chip:active {
-  transform: scale(0.96);
+.tl-slider {
+  flex: none;
+  width: 140px;
 }
 
-/* 左下角 ifVal 渐变图例 */
+.tl-label {
+  flex: none;
+  min-width: 38px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #7fe3ff;
+}
+
+/* el-slider 深色主题适配 + 压低默认高度 */
+::v-deep .tl-chip .el-slider__runway {
+  margin: 6px 0;
+  background-color: rgba(64, 196, 255, 0.18);
+}
+
+::v-deep .tl-chip .el-slider__bar {
+  background-color: #19b8e0;
+}
+
+::v-deep .tl-chip .el-slider__button {
+  width: 12px;
+  height: 12px;
+  border-color: #19b8e0;
+}
+
+/* 左下角 IF 数值筛选（按钮颜色即图例） */
 .map-legend {
   position: absolute;
   left: 12px;
@@ -466,11 +540,34 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 10, 20, 0.35);
 }
 
-.legend-bar {
-  width: 120px;
-  height: 8px;
+.legend-title {
+  font-weight: 600;
+  color: #7fe3ff;
+}
+
+/* IF 数值多选按钮：颜色即图例，未选中置灰 */
+.if-btn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 4px;
-  background: linear-gradient(to right, hsl(120, 90%, 45%), hsl(0, 90%, 45%));
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.2s ease, filter 0.2s ease, transform 0.1s ease;
+}
+
+.if-btn:hover {
+  transform: scale(1.1);
+}
+
+.if-btn.off {
+  opacity: 0.25;
+  filter: grayscale(0.6);
 }
 
 /* 右上角控制面板 */

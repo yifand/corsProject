@@ -91,12 +91,12 @@ export default {
       this.prns = Object.keys(seen).sort()
       this.renderChart()
     },
-    // 每颗卫星一条线：X 轴为历元（HH:mm），Y 轴为 ifVal，缺失历元补 null
+    // 每颗卫星一串点：X 轴为历元（HH:mm），Y 轴为 ifVal，缺失历元补 null
     buildSeries() {
       return this.visibleSats.map(prn => ({
         name: prn,
-        type: 'line',
-        showSymbol: false,
+        type: 'scatter',
+        symbolSize: 6,
         data: this.epochs.map(e => {
           const p = this.epochIndex[e][prn]
           return p ? p.ifVal : null
