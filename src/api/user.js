@@ -1,11 +1,12 @@
 import request from './request'
 
-// 登录
+// 登录（loading: false —— 登录按钮自带 loading 态，不再叠加全屏遮罩）
 export function login(data) {
   return request({
     url: '/user/login',
     method: 'post',
-    data
+    data,
+    loading: false
   })
 }
 

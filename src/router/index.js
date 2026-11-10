@@ -117,9 +117,5 @@ const router = new VueRouter({
   routes
 })
 
-// 跳过登录：所有路由直接放行
-router.beforeEach((to, from, next) => {
-  next()
-})
-
+// 路由守卫见 @/permission.js（在 main.js 中引入注册）
 export default router

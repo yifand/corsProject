@@ -1,7 +1,14 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import { login } from '@/api/user'
-import { getToken, setToken, removeToken } from '@/utils/auth'
+import {
+  getToken,
+  setToken,
+  removeToken,
+  getUserInfo,
+  setUserInfo,
+  removeUserInfo
+} from '@/utils/auth'
 
 Vue.use(Vuex)
 
@@ -9,7 +16,11 @@ const user = {
   namespaced: true,
   state: {
     token: getToken(),
-    userInfo: JSON.parse(localStorage.getItem('userInfo') || '{"username":"admin"}')
+    userInfo: getUserInfo()
+  },
+  getters: {
+    isLogin: state => !!state.token,
+    username: state => state.userInfo.username || ''
   },
   mutations: {
     SET_TOKEN(state, token) {
@@ -17,6 +28,10 @@ const user = {
     },
     SET_USER_INFO(state, userInfo) {
       state.userInfo = userInfo
+    },
+    RESET_STATE(state) {
+      state.token = ''
+      state.userInfo = {}
     }
   },
   actions: {
@@ -27,14 +42,18 @@ const user = {
         commit('SET_TOKEN', token)
         commit('SET_USER_INFO', userInfo)
         setToken(token)
-        localStorage.setItem('userInfo', JSON.stringify(userInfo))
+        setUserInfo(userInfo)
       })
     },
-    logout({ commit }) {
-      commit('SET_TOKEN', '')
-      commit('SET_USER_INFO', {})
+    // 退出登录（用户主动操作）
+    logout({ dispatch }) {
+      dispatch('clearAuth')
+    },
+    // 清理登录态：store 与 localStorage 同步清空（401 时由 request.js 调用）
+    clearAuth({ commit }) {
+      commit('RESET_STATE')
       removeToken()
-      localStorage.removeItem('userInfo')
+      removeUserInfo()
     }
   }
 }

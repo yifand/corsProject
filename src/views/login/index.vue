@@ -58,14 +58,17 @@ export default {
       this.$refs.loginForm.validate(valid => {
         if (!valid) return
         this.loading = true
-       // this.$store
-       //   .dispatch('user/login', this.form)
-      //    .then(() => {
+        this.$store
+          .dispatch('user/login', this.form)
+          .then(() => {
             this.$router.push(this.$route.query.redirect || '/')
-        //  })
-       //   .finally(() => {
-       //     this.loading = false
-      //    })
+          })
+          .catch(() => {
+            // 错误提示由 request.js 响应拦截器统一处理
+          })
+          .finally(() => {
+            this.loading = false
+          })
       })
     }
   }
@@ -78,7 +81,8 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #2d3a4b;
+  background: #0b1b33 url('~@/assets/images/login-bg.png') no-repeat center center;
+  background-size: cover;
 }
 .login-form {
   width: 360px;
