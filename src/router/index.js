@@ -56,6 +56,12 @@ const routes = [
         meta: { title: '卫星管理>IF时序图', menu: 'IF时序图' }
       },
       {
+        path: 'file/upload',
+        name: 'FileUpload',
+        component: () => import('@/views/file/upload.vue'),
+        meta: { title: '文件管理>文件上传', menu: '文件上传' }
+      },
+      {
         path: 'order',
         name: 'Order',
         component: () => import('@/views/common/Placeholder.vue'),

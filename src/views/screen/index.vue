@@ -211,6 +211,14 @@ export default {
       const chart = echarts.init(this.$refs.distChart)
       chart.setOption({
         textStyle: { fontFamily: 'PingFangSC' },
+        tooltip: {
+          trigger: 'axis',
+          backgroundColor: 'rgba(4, 40, 90, 0.85)',
+          borderColor: 'rgba(0, 190, 255, 0.5)',
+          borderWidth: 1,
+          textStyle: { color: '#cfe8ff', fontSize: 12 },
+          axisPointer: { lineStyle: { color: 'rgba(0, 200, 255, 0.6)' } }
+        },
         grid: { left: 40, right: 10, top: 15, bottom: 25 },
         xAxis: {
           type: 'category',
@@ -244,6 +252,13 @@ export default {
       const chart = echarts.init(this.$refs.abnormalChart)
       chart.setOption({
         textStyle: { fontFamily: 'PingFangSC' },
+        tooltip: {
+          trigger: 'item',
+          backgroundColor: 'rgba(4, 40, 90, 0.85)',
+          borderColor: 'rgba(0, 190, 255, 0.5)',
+          borderWidth: 1,
+          textStyle: { color: '#cfe8ff', fontSize: 12 }
+        },
         grid: { left: 35, right: 10, top: 30, bottom: 25 },
         legend: {
           top: 0,
@@ -548,6 +563,7 @@ export default {
   position: absolute;
   top: 20px;
   left: 50%;
+  width:50%;
   transform: translateX(-50%);
   z-index: 1000;
 }

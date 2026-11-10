@@ -8,7 +8,7 @@ import 'echarts-gl'
 import hangzhouGeo from '@/assets/geo/hangzhou.json'
 import baseImg from '@/assets/images/底座.png'
 import labelBgImg from '@/assets/images/框(4).png'
-import mapBgImg from '@/assets/images/home_bg.png'
+import mapBgImg from '@/assets/images/map_bg.png'
 
 /* 各区县 mock 数值（取自设计稿） */
 const DISTRICT_VALUES = {
@@ -110,27 +110,27 @@ export default {
               textureOffset: 0
             },
             itemStyle: {
-              color: '#9cc3f0',
-              borderColor: '#1E7BD6',
-              borderWidth: 1.5
+              //color: 'transparent',
+              borderColor: '#00e4ff',
+              borderWidth: 2
             },
             label: { show: false },
             emphasis: {
-              itemStyle: { color: '#1e90ff' },
+              itemStyle: { color: '#00e4ff' },
               label: {
                 show: true, formatter: p => `${p.name}`, color: '#ffffff', fontSize: 13
               }
             },
             light: {
-              main: { intensity: 1.4, shadow: false, alpha: 50, beta: -20 },
-              ambient: { intensity: 0.45 }
+              main: { intensity: 1.2, shadow: false, alpha: 50, beta: -20 },
+              ambient: { intensity: 0.55 }
             },
             postEffect: {
               enable: true,
-              bloom: { enable: true, bloomIntensity: 0.15 }
+              bloom: { enable: true, bloomIntensity: 0.3 }
             },
             viewControl: {
-              alpha: 40,
+              alpha: 45,
               beta: 0,
               distance: 90,
               minDistance: 60,
@@ -170,9 +170,10 @@ export default {
                 distance: 18,
                 formatter: p => `${p.value[3]}\n${p.name}`,
                 color: '#fff',
-                fontSize: 12,
-                lineHeight: 14,
-                padding: [5, 10],
+                fontSize: 14,
+                fontWeight: 600,
+                lineHeight: 18,
+                padding: [8, 14],
                 backgroundColor: { image: labelBgImg }
               },
               data: pins

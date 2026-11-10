@@ -135,7 +135,8 @@ export default {
         { title: '子网管理', path: '/subnet' },
         { title: '分区管理', path: '/region' },
         { title: '源节点管理', path: '/source-node' },
-        { title: '告警管理', path: '/alarm' }
+        { title: '告警管理', path: '/alarm' },
+        { title: '文件上传', path: '/file/upload' }
       ]
     }
   },

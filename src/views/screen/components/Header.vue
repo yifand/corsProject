@@ -35,8 +35,8 @@ export default {
         font-family: JiangChengXieHei, JiangChengXieHei;
         padding-top: 18px;
         text-align: center;
-        font-size: 34px;
-        letter-spacing: 6px;
+        font-size: 40px;
+        letter-spacing: 12px;
         color: #eaf6ff;
         text-shadow: 0 0 18px rgba(0, 200, 255, 0.9), 0 0 40px rgba(0, 140, 255, 0.5);
     }
@@ -45,6 +45,7 @@ export default {
         position: absolute;
         right: 20px;
         bottom: 10px;
+        font-size: 22px;
     }
 }
 </style>
