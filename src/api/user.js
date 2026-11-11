@@ -1,9 +1,20 @@
 import request from './request'
 
-// 登录（loading: false —— 登录按钮自带 loading 态，不再叠加全屏遮罩）
+// 获取滑块验证码（文档 2.1）：返回 result: { background, slider, token }
+export function getVerify() {
+  return request({
+    url: '/login/getVerify',
+    method: 'get',
+    loading: false
+  })
+}
+
+// 登录（文档 2.2），data: { username, password, captchaToken, sliderOffset }
+// 成功后 token 在响应头 Authorization 返回，由 request.js 拦截器统一落盘
+// （loading: false —— 登录按钮自带 loading 态，不再叠加全屏遮罩）
 export function login(data) {
   return request({
-    url: '/user/login',
+    url: '/login',
     method: 'post',
     data,
     loading: false

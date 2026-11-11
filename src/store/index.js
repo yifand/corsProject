@@ -3,7 +3,6 @@ import Vuex from 'vuex'
 import { login } from '@/api/user'
 import {
   getToken,
-  setToken,
   removeToken,
   getUserInfo,
   setUserInfo,
@@ -35,14 +34,14 @@ const user = {
     }
   },
   actions: {
-    // 登录：约定接口返回 data: { token, userInfo }
+    // 登录：接口返回 result: { accountName, role }；
+    // token 在响应头 Authorization，已由 request.js 拦截器落盘
     login({ commit }, loginForm) {
       return login(loginForm).then(res => {
-        const { token, userInfo } = res.data
-        commit('SET_TOKEN', token)
-        commit('SET_USER_INFO', userInfo)
-        setToken(token)
-        setUserInfo(userInfo)
+        const { accountName, role } = res.result || {}
+        commit('SET_TOKEN', getToken())
+        commit('SET_USER_INFO', { username: accountName, role })
+        setUserInfo({ username: accountName, role })
       })
     },
     // 退出登录（用户主动操作）

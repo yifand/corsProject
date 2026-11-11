@@ -1,3 +1,5 @@
+const config = require('./config')
+
 module.exports = {
   lintOnSave: false,
   css: {
@@ -18,14 +20,16 @@ module.exports = {
     }
   },
   devServer: {
-    port: 8080
-    // 对接后端时打开下面的代理配置，把 target 改成你的后端地址，
-    // 前端请求 /api/** 会被转发到该地址（可解决开发环境跨域问题）
-    // proxy: {
-    //   '/api': {
-    //     target: 'http://localhost:3000',
-    //     changeOrigin: true
-    //   }
-    // }
+    port: 8080,
+      proxy: {
+      '/cors': {
+        target: `http://${config.__PROJECT}.dev.internal.virtueit.net:81/v1/corsdashboard`, // 接口域名
+        secure: false, // 如果是https接口，需要配置这个参数
+        changeOrigin: true, // 是否跨域
+        pathRewrite: {
+          '^/cors': '/'
+        }
+      }
+    }
   }
 }

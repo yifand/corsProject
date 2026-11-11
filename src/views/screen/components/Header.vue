@@ -1,6 +1,12 @@
 <template>
     <div class="screen-header">
         <h1 class="header-title">高精度定位服务平台</h1>
+        <div class="header-user">
+            <i class="el-icon-user"></i>
+            <span class="user-name">{{ username }}</span>
+            <span class="user-divider">|</span>
+            <span class="logout-btn" @click="handleLogout">退出登录</span>
+        </div>
         <div class="header-time">{{ now }}</div>
         <!-- <div class="header-line"></div> -->
     </div>
@@ -13,6 +19,17 @@ export default {
         now: {
             type: String,
             default: ''
+        }
+    },
+    computed: {
+        username() {
+            return this.$store.getters['user/username'] || '用户'
+        }
+    },
+    methods: {
+        handleLogout() {
+            this.$store.dispatch('user/logout')
+            this.$router.push('/login')
         }
     }
 }
@@ -46,6 +63,29 @@ export default {
         right: 20px;
         bottom: 10px;
         font-size: 22px;
+    }
+
+    .header-user {
+        position: absolute;
+        right: 20px;
+        top: 18px;
+        font-size: 16px;
+        color: #bfe4ff;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .user-divider {
+            color: rgba(191, 228, 255, 0.4);
+        }
+
+        .logout-btn {
+            cursor: pointer;
+
+            &:hover {
+                color: #00e4ff;
+            }
+        }
     }
 }
 </style>

@@ -25,6 +25,9 @@
           @keyup.enter.native="handleLogin"
         />
       </el-form-item>
+      <el-form-item>
+        <slider-captcha ref="captcha" @change="onCaptchaChange" />
+      </el-form-item>
       <el-button
         type="primary"
         class="login-btn"
@@ -38,8 +41,11 @@
 </template>
 
 <script>
+import SliderCaptcha from '@/components/SliderCaptcha.vue'
+
 export default {
   name: 'LoginPage',
+  components: { SliderCaptcha },
   data() {
     return {
       form: {
@@ -50,21 +56,33 @@ export default {
         username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
         password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
       },
+      // 滑块验证结果 { captchaToken, sliderOffset }，未拖动为 null
+      captcha: null,
       loading: false
     }
   },
   methods: {
+    onCaptchaChange(payload) {
+      this.captcha = payload
+    },
     handleLogin() {
       this.$refs.loginForm.validate(valid => {
         if (!valid) return
+        if (!this.captcha) {
+          this.$message.warning('请按住滑块拖动完成验证')
+          return
+        }
         this.loading = true
         this.$store
-          .dispatch('user/login', this.form)
+          .dispatch('user/login', { ...this.form, ...this.captcha })
           .then(() => {
-            this.$router.push(this.$route.query.redirect || '/')
+            this.$router.push('/screen')
           })
           .catch(() => {
-            // 错误提示由 request.js 响应拦截器统一处理
+            // 错误提示由 request.js 响应拦截器统一处理；
+            // 验证码一次性（含密码错误），失败后必须换新验证码
+            this.captcha = null
+            this.$refs.captcha.refresh()
           })
           .finally(() => {
             this.loading = false

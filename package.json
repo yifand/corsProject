@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build"
+    "serve": "cross-env NODE_ENV=development VUE_APP_DEVOPS_ENV=local vue-cli-service serve",
+    "build:dev": "cross-env NODE_ENV=production VUE_APP_DEVOPS_ENV=dev vue-cli-service build",
+    "build:prod": "cross-env NODE_ENV=production VUE_APP_DEVOPS_ENV=prod vue-cli-service build"
   },
   "dependencies": {
     "amfe-flexible": "^2.2.1",
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.19",
     "@vue/cli-service": "~4.5.19",
+    "cross-env": "^7.0.2",
     "less": "^3.13.1",
     "less-loader": "^7.3.0",
     "postcss-pxtorem": "^5.1.1",
