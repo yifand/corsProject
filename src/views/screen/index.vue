@@ -25,7 +25,7 @@
         <Panel title="服务端口" class="panel-port">
           <div class="port-row" v-for="(p, i) in ports" :key="i">
             <span>端口：{{ p.port }}</span>
-            <span class="port-zbx">坐标系：{{ p.system }}</span>
+            <span class="port-zbx">坐标系：{{ p.coordSystem }}</span>
           </div>
         </Panel>
 
@@ -37,10 +37,10 @@
       <!-- 中列 -->
       <div class="col col-center">
         <div class="locate-count">
-          定位服务次数：<span class="count-num">2793</span><span class="count-unit">次</span>
+          定位服务次数：<span class="count-num">{{ callTotalNbr }}</span><span class="count-unit">次</span>
         </div>
         <div class="map-wrap">
-          <Map3D />
+          <Map3D :distribution="distribution" />
         </div>
       </div>
 
@@ -49,29 +49,29 @@
         <Panel title="帐号统计" class="panel-account">
           <div class="acc-top">
             <div class="acc-item">
-              <div class="acc-num orange">98975</div>
+              <div class="acc-num orange">{{ accountStats.total }}</div>
               <div class="acc-label">激活帐号数（累计）</div>
               <div class="acc-icon icon-red"></div>
             </div>
             <div class="acc-item">
-              <div class="acc-num yellow">732138</div>
+              <div class="acc-num yellow">{{ accountStats.newAdd }}</div>
               <div class="acc-label">激活帐号数（新增）</div>
               <div class="acc-icon icon-yellow"></div>
             </div>
           </div>
           <div class="acc-bottom">
             <div class="acc-item">
-              <div class="acc-num active">738</div>
+              <div class="acc-num active">{{ accountStats.active }}</div>
               <div class="acc-label">活跃帐号数</div>
               <div class="acc-icon icon-active"></div>
             </div>
             <div class="acc-item">
-              <div class="acc-num concurrency">738</div>
+              <div class="acc-num concurrency">{{ accountStats.concurrent }}</div>
               <div class="acc-label">并发数</div>
               <div class="acc-icon icon-concurrency"></div>
             </div>
             <div class="acc-item">
-              <div class="acc-num account">738</div>
+              <div class="acc-num account">{{ accountStats.current }}</div>
               <div class="acc-label">用户数</div>
               <div class="acc-icon icon-account"></div>
             </div>
@@ -90,21 +90,29 @@
       <Panel title="资源监控（含数据库+中间件）" class="bottom-table">
         <el-table :data="resourceRows" size="mini" highlight-current-row>
           <el-table-column prop="module" label="模块" min-width="70px" show-overflow-tooltip />
-          <el-table-column prop="cpu" label="CPU" min-width="70px" show-overflow-tooltip />
-          <el-table-column prop="memory" label="内存" min-width="70px" show-overflow-tooltip />
-          <el-table-column prop="io" label="IO" min-width="70px" show-overflow-tooltip />
+          <el-table-column label="CPU(核)" min-width="70px" show-overflow-tooltip
+            :formatter="oneDecimalFormatter('cpu')" />
+          <el-table-column label="内存(MB)" min-width="80px" show-overflow-tooltip
+            :formatter="oneDecimalFormatter('memory')" />
+          <el-table-column prop="io" label="IO(KB)" min-width="70px" show-overflow-tooltip />
           <el-table-column prop="time" label="时间" min-width="100px" show-overflow-tooltip />
         </el-table>
       </Panel>
       <Panel title="应用告警" class="bottom-table">
         <el-table :data="alarmRows" size="mini" highlight-current-row>
           <el-table-column prop="module" label="模块" show-overflow-tooltip min-width="60px" />
-          <el-table-column prop="type" label="类型" show-overflow-tooltip min-width="50px" />
+          <el-table-column prop="alarmType" label="类型" show-overflow-tooltip min-width="50px" />
           <el-table-column prop="count" label="次数" show-overflow-tooltip min-width="60px" />
           <el-table-column prop="time" label="时间" show-overflow-tooltip min-width="60px" />
-          <el-table-column prop="restart" label="重启" show-overflow-tooltip min-width="50px" />
-          <el-table-column prop="cpuOver" label="CPU超限" show-overflow-tooltip min-width="80px" />
-          <el-table-column prop="ioOver" label="IO超限" show-overflow-tooltip min-width="80px" />
+          <el-table-column label="重启" show-overflow-tooltip min-width="50px">
+            <template slot-scope="{ row }">{{ row.restart ? '是' : '否' }}</template>
+          </el-table-column>
+          <el-table-column label="CPU超限" show-overflow-tooltip min-width="80px">
+            <template slot-scope="{ row }">{{ row.cpuOver ? '是' : '否' }}</template>
+          </el-table-column>
+          <el-table-column label="IO超限" show-overflow-tooltip min-width="80px">
+            <template slot-scope="{ row }">{{ row.ioOver ? '是' : '否' }}</template>
+          </el-table-column>
         </el-table>
       </Panel>
       <Panel title="异常日志" class="bottom-table">
@@ -117,7 +125,8 @@
       </Panel>
       <Panel title="连通性监控" class="bottom-table">
         <el-table :data="connRows" size="mini" highlight-current-row>
-          <el-table-column prop="type" label="类型" />
+          <el-table-column prop="module" label="模块" show-overflow-tooltip min-width="60px" />
+          <el-table-column prop="type" label="类型" show-overflow-tooltip />
           <el-table-column label="状态">
             <template slot-scope="{ row }">
               <span :class="row.status === '正常' ? 'ok' : 'bad'">{{ row.status }}</span>
@@ -135,6 +144,35 @@ import * as echarts from 'echarts'
 import Panel from './components/Panel.vue'
 import Header from './components/Header.vue'
 import Map3D from './components/Map3D.vue'
+import {
+  getStationNbr,
+  getDistribution,
+  getServerInfo,
+  getCallTotalNbr,
+  getCallAreaNbr,
+  getTotalActiveNbr,
+  getNewActiveNbr,
+  getActiveNbr,
+  getConcurrentNbr,
+  getCurrentNbr,
+  getAbnormalBehavior,
+  getResource,
+  getAlarm,
+  getAbnormalLog,
+  getConnectivity
+} from '@/api/screen'
+
+const pad = n => String(n).padStart(2, '0')
+const fmtDate = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+
+// 异常行为 5 类（文档 3.7）：字段 → 图例名/颜色
+const ABNORMAL_CATEGORIES = [
+  { key: 'blacklist', name: '黑名单', color: '#4f8ff7' },
+  { key: 'nonBlackLock', name: '非黑锁定', color: '#2fd6ff' },
+  { key: 'nonBlackName', name: '非黑名单', color: '#8f9ff7' },
+  { key: 'expired', name: '过期账号', color: '#5ef0b0' },
+  { key: 'inactive', name: '未激活', color: '#f7e28f' }
+]
 
 export default {
   name: 'ScreenPage',
@@ -142,45 +180,33 @@ export default {
   data() {
     return {
       now: '',
-      timer: null,
+      timer: null, // 顶部时钟
+      fastTimer: null, // 10s 轮询组`
+      slowTimer: null, // 60s 轮询组
       charts: [],
-      baseStations: [
-        { value: 100, label: '虚拟基站数', color: '#ff5b6a' },
-        { value: 100, label: '虚拟基站数', color: '#ffa940' },
-        { value: 100, label: '虚拟基站数', color: '#00e4ff' }
-      ],
-      ports: [
-        { port: 8101, system: 'CGCS2000-ITRF08' },
-        { port: 8102, system: 'WGS84' },
-        { port: 8103, system: 'ITRF08' }
-      ],
-      accountStats: ['活跃帐号数', '并发数', '当前用户数'],
-      resourceRows: [1, 2, 3].map(() => ({
-        module: '模块一',
-        cpu: 'CPU名字',
-        memory: '内存名字',
-        io: 'IO名字',
-        time: '07-27 16:32:28'
-      })),
-      alarmRows: [1, 2, 3].map(() => ({
-        module: '模块001',
-        type: 'XXX',
-        count: 1234,
-        time: '07-29',
-        restart: '是',
-        cpuOver: 'CPU名字',
-        ioOver: 'IO名字'
-      })),
-      logRows: [1, 2, 3].map(() => ({
-        module: '模块 003',
-        log: '39908546',
-        count: '81922',
-        time: '07-29 16:33:33'
-      })),
-      connRows: [
-        { type: '解算-播发', status: '正常', time: '2026-07-29' },
-        { type: '解算-播发', status: '断连', time: '2026-07-29' },
-        { type: '解算-播发', status: '正常', time: '2026-07-29' }
+      stationNbr: { online: 0, offline: 0, abnormal: 0 },
+      ports: [],
+      callTotalNbr: 0,
+      distribution: [],
+      accountStats: {
+        total: 0, // 激活帐号数（累计）
+        newAdd: 0, // 激活帐号数（今日新增）
+        active: 0, // 活跃帐号数（昨日）
+        concurrent: 0, // 并发数
+        current: 0 // 当前用户数
+      },
+      resourceRows: [],
+      alarmRows: [],
+      logRows: [],
+      connRows: []
+    }
+  },
+  computed: {
+    baseStations() {
+      return [
+        { value: this.stationNbr.online, label: '在线', color: '#00e4ff' },
+        { value: this.stationNbr.offline, label: '离线', color: '#ffa940' },
+        { value: this.stationNbr.abnormal, label: '异常', color: '#ff5b6a' }
       ]
     }
   },
@@ -190,22 +216,72 @@ export default {
     this.$nextTick(() => {
       this.initDistChart()
       this.initAbnormalChart()
+      this.loadAll()
     })
+    // 轮询周期按文档 3.0 建议：10s 组 / 60s 组
+    this.fastTimer = setInterval(this.fetchFast, 10000)
+    this.slowTimer = setInterval(this.fetchSlow, 60000)
     window.addEventListener('resize', this.resizeCharts)
   },
   beforeDestroy() {
     clearInterval(this.timer)
+    clearInterval(this.fastTimer)
+    clearInterval(this.slowTimer)
     window.removeEventListener('resize', this.resizeCharts)
     this.charts.forEach(c => c.dispose())
   },
   methods: {
     tick() {
       const d = new Date()
-      const p = n => String(n).padStart(2, '0')
-      this.now = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`
+      this.now = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
     },
     resizeCharts() {
       this.charts.forEach(c => c.resize())
+    },
+    // CPU（核）/内存（MB）展示保留一位小数（文档 3.8.1）
+    oneDecimalFormatter(prop) {
+      return (row, column, cellValue) => {
+        const v = Number(cellValue)
+        return isNaN(v) ? '' : v.toFixed(1)
+      }
+    },
+    loadAll() {
+      this.fetchFast()
+      this.fetchSlow()
+      // 服务端口为静态数据（后端缓存 5min），页面初始化拉一次即可（文档 3.3）
+      getServerInfo().then(res => { this.ports = res.result || [] }).catch(() => { })
+    },
+    // 10s 组：基准站数量、定位服务总次数、并发数、当前用户数
+    fetchFast() {
+      getStationNbr().then(res => { this.stationNbr = res.result || this.stationNbr }).catch(() => { })
+      getCallTotalNbr().then(res => { this.callTotalNbr = res.result || 0 }).catch(() => { })
+      getConcurrentNbr().then(res => { this.accountStats.concurrent = res.result || 0 }).catch(() => { })
+      getCurrentNbr().then(res => { this.accountStats.current = res.result || 0 }).catch(() => { })
+    },
+    // 60s 组：站点分布、分布图统计、账号统计、异常行为、智能运维四块
+    fetchSlow() {
+      getDistribution().then(res => { this.distribution = res.result || [] }).catch(() => { })
+      this.fetchCallArea()
+      getTotalActiveNbr().then(res => { this.accountStats.total = res.result || 0 }).catch(() => { })
+      getNewActiveNbr(fmtDate(new Date())).then(res => { this.accountStats.newAdd = res.result || 0 }).catch(() => { })
+      getActiveNbr().then(res => { this.accountStats.active = res.result || 0 }).catch(() => { })
+      getAbnormalBehavior(30).then(res => { this.updateAbnormalChart(res.result || {}) }).catch(() => { })
+      getResource(10).then(res => { this.resourceRows = res.result || [] }).catch(() => { })
+      getAlarm(10).then(res => { this.alarmRows = res.result || [] }).catch(() => { })
+      getAbnormalLog(10).then(res => { this.logRows = res.result || [] }).catch(() => { })
+      getConnectivity().then(res => { this.connRows = res.result || [] }).catch(() => { })
+    },
+    // 用户分布（文档 3.5）：近 7 天按区域聚合
+    fetchCallArea() {
+      const end = new Date()
+      const start = new Date()
+      start.setDate(start.getDate() - 6)
+      getCallAreaNbr({
+        start: fmtDate(start) + ' 00:00:00',
+        end: fmtDate(end) + ' 23:59:59'
+      }).then(res => {
+        this.updateDistChart((res.result && res.result.areaList) || [])
+      }).catch(() => { })
     },
     initDistChart() {
       const chart = echarts.init(this.$refs.distChart)
@@ -222,7 +298,7 @@ export default {
         grid: { left: 40, right: 10, top: 15, bottom: 25 },
         xAxis: {
           type: 'category',
-          data: ['临安区', '富阳区', '钱塘区', '临平区', '滨江区'],
+          data: [],
           axisLine: { lineStyle: { color: 'rgba(120,180,255,.4)' } },
           axisLabel: { color: '#9cc8ee', fontSize: 11 },
           axisTick: { show: false }
@@ -236,7 +312,7 @@ export default {
           type: 'line',
           smooth: true,
           symbol: 'none',
-          data: [260, 780, 480, 820, 430],
+          data: [],
           lineStyle: { color: '#35c4ff', width: 2 },
           areaStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
@@ -246,7 +322,16 @@ export default {
           }
         }]
       })
+      this.distChart = chart
       this.charts.push(chart)
+    },
+    // areaList: [{ area, nbr }]
+    updateDistChart(areaList) {
+      if (!this.distChart) return
+      this.distChart.setOption({
+        xAxis: { data: areaList.map(i => i.area) },
+        series: [{ data: areaList.map(i => i.nbr) }]
+      })
     },
     initAbnormalChart() {
       const chart = echarts.init(this.$refs.abnormalChart)
@@ -266,11 +351,11 @@ export default {
           itemWidth: 16,
           itemHeight: 3,
           textStyle: { color: '#9cc8ee', fontSize: 12, lineHeight: 12 },
-          data: ['黑名单', '异常行为', '非黑名单', '异常登录', '未激活']
+          data: ABNORMAL_CATEGORIES.map(c => c.name)
         },
         xAxis: {
           type: 'category',
-          data: ['0720', '0722', '0724', '0726', '0727'],
+          data: ABNORMAL_CATEGORIES.map(c => c.name),
           axisLine: { lineStyle: { color: 'rgba(120,180,255,.4)' } },
           axisLabel: { color: '#9cc8ee', fontSize: 11 },
           axisTick: { show: false }
@@ -280,15 +365,30 @@ export default {
           splitLine: { lineStyle: { color: 'rgba(120,180,255,.12)' } },
           axisLabel: { color: '#9cc8ee', fontSize: 11 }
         },
-        series: [
-          { name: '黑名单', type: 'bar', barWidth: 10, data: [17, null, null, null, null], itemStyle: { color: '#4f8ff7' } },
-          { name: '异常行为', type: 'bar', barWidth: 10, data: [null, 26, null, null, null], itemStyle: { color: '#2fd6ff' } },
-          { name: '非黑名单', type: 'bar', barWidth: 10, data: [null, null, 21, null, null], itemStyle: { color: '#8f9ff7' } },
-          { name: '异常登录', type: 'bar', barWidth: 10, data: [null, null, null, 14, null], itemStyle: { color: '#5ef0b0' } },
-          { name: '未激活', type: 'bar', barWidth: 10, data: [null, null, null, null, 17], itemStyle: { color: '#f7e28f' } }
-        ]
+        // 每类一个 series（值只落在对应 x 位上），保证 legend 可按类开关
+        series: ABNORMAL_CATEGORIES.map(c => ({
+          name: c.name,
+          type: 'bar',
+          barWidth: 10,
+          // 各 series 柱子重叠在同一居中位置；每个类目只有一根有值，不会互相遮挡
+          barGap: '-100%',
+          data: [],
+          itemStyle: { color: c.color }
+        }))
       })
+      this.abnormalChart = chart
       this.charts.push(chart)
+    },
+    // result: { blacklist, nonBlackLock, nonBlackName, expired, inactive }
+    updateAbnormalChart(result) {
+      console.log({ result });
+
+      if (!this.abnormalChart) return
+      this.abnormalChart.setOption({
+        series: ABNORMAL_CATEGORIES.map((c, i) => ({
+          data: ABNORMAL_CATEGORIES.map((_, j) => (j === i ? (result[c.key] || 0) : null))
+        }))
+      })
     }
   }
 }
@@ -563,7 +663,7 @@ export default {
   position: absolute;
   top: 20px;
   left: 50%;
-  width:50%;
+  width: 50%;
   transform: translateX(-50%);
   z-index: 1000;
 }
